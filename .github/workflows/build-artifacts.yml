@@ -1,4 +1,4 @@
-name: Build Anki deck and upload artifacts
+name: Build Anki decks and upload artifacts
 
 on:
   push:
@@ -8,6 +8,13 @@ on:
 jobs:
   build:
     runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        language:
+          - rust
+          - godot
+          - wolfram-language
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,10 +29,15 @@ jobs:
         run: nix flake check
 
       - name: Build Anki deck with Nix
-        run: nix develop --command bash -c 'make cards.apkg'
+        run: |
+          nix develop --command bash -c \
+            'cd ${{ matrix.language }} && make cards.apkg'
+
+      - name: Rename artifact
+        run: cp ${{ matrix.language }}/cards.apkg cards-${{ matrix.language }}.apkg
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            cards.apkg
+            cards-${{ matrix.language }}.apkg
