@@ -4,12 +4,7 @@
     utils.url = "github:numtide/flake-utils";
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      utils,
-    }:
+  outputs = { self, nixpkgs, utils, }:
     let
       supportedSystems = [
         "x86_64-darwin"
