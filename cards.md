@@ -2,7 +2,102 @@
 name: Wolfram Language Flashcards
 ---
 
----
+--------------------------------------------------------------------------------
+
+How to you apply function `f` in prefix notation to the argument `x`?
+
+. . .
+
+```wolfram
+In[1]:= f @ x
+Out[1]= f[x]
+```
+
+--------------------------------------------------------------------------------
+
+How do you apply function `f` in infix notation to the arguments `x` and `y`?
+
+. . .
+
+```wolfram
+In[1]:= x ~f~ y
+Out[1]= f[x, y]
+```
+
+--------------------------------------------------------------------------------
+
+How do you apply function `f` in postfix notation to the argument `x`?
+
+. . .
+
+```wolfram
+In[1]:= x // f
+Out[1]= f[x]
+```
+
+--------------------------------------------------------------------------------
+
+Apply function `Plus` to the list `{1, 2, 3}` in prefix notation.
+
+. . .
+
+```wolfram
+In[1]:= Plus @@ {1, 2, 3}
+Out[1]= 6
+```
+
+`f @@ expr` Replaces the head of `expr` by `f`.
+It's the same as `Apply[f, expr]`.
+
+--------------------------------------------------------------------------------
+
+Map function `f` over list `{1, 2, 3}` in prefix notation.
+
+. . .
+
+```wolfram
+In[1]:= f /@ {1, 2, 3}
+Out[1]= {f[1], f[2], f[3]}
+```
+
+It's the same as `Map[f, {1, 2, 3}]`.
+
+--------------------------------------------------------------------------------
+
+Apply first function `f` and then function `g` to list `{1, 2, 3}`
+as a pipeline (aka chain of prefix notation).
+
+. . .
+
+In[1]:= {1, 2, 3} //
+          Map[f,#]& //
+ 	        Map[g,#]&
+Out[1]= {g[f[1]], g[f[2]], g[f[3]]}
+
+--------------------------------------------------------------------------------
+
+How do you write multi-line strings?
+
+. . .
+
+Including the newline:
+
+```wolfram
+In[1]:= "Hello
+        World"
+Out[1]= "Hello
+        World"
+```
+
+Without the newline:
+
+```wolfram
+In[1]:= "Hello \
+        World"
+Out[1]= "Hello World"
+```
+
+--------------------------------------------------------------------------------
 
 Get the 8th prime number.
 
@@ -443,7 +538,15 @@ In[1]:= StringJoin["Hello", " ", "World"]
 Out[1]= Hello World
 ```
 
----
+of
+
+```wolfram
+In[1]:= "Hello" <> " " <> "World"
+
+Out[1]= Hello World
+```
+
+--------------------------------------------------------------------------------
 
 How do you find the length of a list?
 
@@ -790,4 +893,105 @@ What function is used to solve differential equations?
 In[1]:= DSolve[y'==y]
 
 Out[1]= {{y->Function[{\[FormalX]},E^\[FormalX] Subscript[\[ConstantC], 1]]}}
+```
+
+--------------------------------------------------------------------------------
+
+Create an association for 1 to one and 2 to two.
+
+. . .
+
+```wolfram
+<| 1 -> "one", 2 -> "two"|>
+```
+
+--------------------------------------------------------------------------------
+
+Update the value of 2 in following association to "dos":
+```wolfram
+wordMap = <|1 -> "one", 2 -> "two"|>
+```
+
+. . .
+
+```wolfram
+ReplacePart[wordMap, 2 -> "dos"]
+```
+
+**Note:**
+`ReplacePart` has no effect if the key is not present in the association.
+
+--------------------------------------------------------------------------------
+
+Import a CSV of words and their translations,
+take the first 5 words after the header and make them upper case.
+Use a pipeline style for the transformations.
+
+. . .
+
+```wolfram
+In[1]:= Import["words.csv"][[2;;6]] //
+          Map[First,#]& //
+          Map[ToUpperCase,#]&
+Out[1]= {"APPLE", "BANANA", "CHERRY", "PEAR", "ELDERBERRY"}
+```
+
+--------------------------------------------------------------------------------
+
+Get a country entity from a country string
+
+. . .
+
+```wolfram
+In[1]:= Interpreter["Country"]["USA"]
+
+Out[1]= Entity["Country", "UnitedStates"]
+```
+
+
+--------------------------------------------------------------------------------
+
+Get a color representation from a color name
+
+. . .
+
+```wolfram
+In[1]:= Interpreter["Color"]["blue"]
+
+Out[1]= RGBColor[0, 0, 1]
+```
+
+
+--------------------------------------------------------------------------------
+
+Write a function `greet` to insert a name into a greeting phrase
+
+. . .
+
+```wolfram
+greet = StringTemplate["Hello ``, how are you?"]
+```
+
+--------------------------------------------------------------------------------
+
+Export a JSON object to `fruits.json` with a mapping of fruits to their colors:
+
+. . .
+
+```wolfram
+In[1]:= Export["fruits.json", {
+          "banana" -> "yellow",
+          "cherry" -> "red",
+        }]
+Out[1]= fruits.json
+```
+
+or
+
+```wolfram
+In[1]:= Export["fruits.json", <|
+          "banana" -> "yellow",
+          "cherry" -> "red",
+        |>]
+Out[1]= fruits.json
 ```
