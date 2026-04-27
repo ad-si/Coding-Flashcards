@@ -1,0 +1,31 @@
+name: Build Anki deck and upload artifacts
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+        with:
+          nix_path: nixpkgs=channel:nixos-23.11
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Nix Flake
+        run: nix flake check
+
+      - name: Build Anki deck with Nix
+        run: nix develop --command bash -c 'make cards.apkg'
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            cards.apkg
