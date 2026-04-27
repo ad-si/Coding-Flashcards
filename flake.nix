@@ -8,14 +8,14 @@
     utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
-        version = "0.0.0.3";
+        version = "0.0.0.6";
         releasesUrl = "https://github.com/kamalsacranie/anki-panky/releases";
         ankiPanky = pkgs.stdenv.mkDerivation {
           name = "anki-panky";
-          version = "0.0.0.3";
+          version = "0.0.0.6";
           src = pkgs.fetchzip {
             url = "${releasesUrl}/download/${version}/macOS-11-anki-panky-${version}.tar.gz";
-            sha256 = "HJX0C7YKTYzbkCUnww3N2VBRcMNhGvvwBX0YBTnO5Us=";
+            sha256 = "7kkfdx1vndheb63+m2HOLXo0wOYX4iReh9c7Ps/KYQk=";
           };
           phases = [ "installPhase" ];
           installPhase = ''
