@@ -25,6 +25,7 @@ build: cards.apkg
 
 .PHONY: test
 test: cards.apkg
+	nix flake check
 	unzip cards.apkg -d cards-test
 	ls -l cards-test
 
