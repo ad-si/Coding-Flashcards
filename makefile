@@ -15,9 +15,12 @@ cards-combined.md: rust/cards.md godot/cards.md sqlite/cards.md wolfram-language
 	printf -- '---\nname: Coding Flashcards\n---\n' > $@
 	for f in $^; do \
 		dir=$$(dirname "$$f"); \
-		awk -v dir="$$dir" 'BEGIN{seen=0} \
+		awk -v dir="$$dir" 'BEGIN{seen=0; deck=""} \
+			/^name:/ && seen<2 {sub(/^name: */,""); deck=$$0; next} \
 			/^---$$/ && seen<2 {seen++; next} \
-			seen>=2 {gsub(/\.\/images\//, "images/"); gsub(/images\//, dir "/images/"); print}' \
+			seen<2 {next} \
+			/^-{3,}$$/ {gsub(/\.\/images\//, "images/"); gsub(/images\//, dir "/images/"); print; print ""; print "`<small style=\"color:#888\">" deck "</small>`{=html}`{\\small\\color{gray} " deck "}`{=latex}"; next} \
+			{gsub(/\.\/images\//, "images/"); gsub(/images\//, dir "/images/"); print}' \
 			"$$f" >> $@; \
 	done
 

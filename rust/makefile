@@ -9,7 +9,7 @@ cards.apkg: cards.md
 
 cards-with-name.md: cards.md
 	deck_name=$$(awk '/^name:/{sub(/^name: */,""); print; exit}' $<); \
-	awk -v name="$$deck_name" 'BEGIN{y=0} /^-{3,}$$/ {print; if(y<2){y++; next} print ""; print "*" name "*"; next} {print}' $< > $@
+	awk -v name="$$deck_name" 'BEGIN{y=0} /^-{3,}$$/ {print; if(y<2){y++; next} print ""; print "`<small style=\"color:#888\">" name "</small>`{=html}`{\\small\\color{gray} " name "}`{=latex}"; next} {print}' $< > $@
 
 
 cards-with-name.apkg: cards-with-name.md
