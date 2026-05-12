@@ -23,7 +23,7 @@
           then
             pkgs.fetchzip {
               url = "${releasesUrl}/download/${version}/macOS-14-anki-panky-${version}.tar.gz";
-              sha256 = "7kkfdx1vndheb63+m2HOLXo0wOYX4iReh9c7Ps/KYQk=";
+              sha256 = "/pZTo3OzIbtAqZC0GgT2SngxD15SoDJYsj5sGq+hrV4=";
             }
           else
             pkgs.fetchzip {
