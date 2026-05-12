@@ -11,6 +11,25 @@ build:
 	cd wolfram-language && make build
 
 
+cards-combined.md: rust/cards.md godot/cards.md sqlite/cards.md wolfram-language/cards.md
+	printf -- '---\nname: Coding Flashcards\n---\n' > $@
+	for f in $^; do \
+		dir=$$(dirname "$$f"); \
+		awk -v dir="$$dir" 'BEGIN{seen=0} \
+			/^---$$/ && seen<2 {seen++; next} \
+			seen>=2 {gsub(/\.\/images\//, "images/"); gsub(/images\//, dir "/images/"); print}' \
+			"$$f" >> $@; \
+	done
+
+
+cards-combined.apkg: cards-combined.md
+	anki-panky $<
+
+
+.PHONY: build-combined
+build-combined: cards-combined.apkg
+
+
 .PHONY: test
 test:
 	cd rust && make test
@@ -21,6 +40,7 @@ test:
 
 .PHONY: clean
 clean:
+	rm -f cards-combined.md cards-combined.apkg
 	cd rust && make clean
 	cd godot && make clean
 	cd sqlite && make clean
