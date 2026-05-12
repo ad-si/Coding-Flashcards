@@ -12,3 +12,4 @@ Written in markdown with script to convert them to Anki decks or PDF files.
 - [SQLite](./sqlite)
 - [Godot](./godot)
 - [Wolfram Language](./wolfram-language)
+- [Lua](./lua)
