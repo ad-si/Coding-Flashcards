@@ -24,6 +24,7 @@ jobs:
           - sqlite
           - wolfram-language
           - lua
+          - c
     steps:
       - name: Checkout
         uses: actions/checkout@v6

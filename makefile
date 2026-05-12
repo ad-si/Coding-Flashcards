@@ -10,9 +10,10 @@ build:
 	cd sqlite && make build
 	cd wolfram-language && make build
 	cd lua && make build
+	cd c && make build
 
 
-cards-combined.md: rust/cards.md godot/cards.md sqlite/cards.md wolfram-language/cards.md lua/cards.md
+cards-combined.md: rust/cards.md godot/cards.md sqlite/cards.md wolfram-language/cards.md lua/cards.md c/cards.md
 	printf -- '---\nname: Coding Flashcards\n---\n' > $@
 	for f in $^; do \
 		dir=$$(dirname "$$f"); \
@@ -54,6 +55,7 @@ test:
 	cd sqlite && make test
 	cd wolfram-language && make test
 	cd lua && make test
+	cd c && make test
 
 
 .PHONY: clean
@@ -64,3 +66,4 @@ clean:
 	cd sqlite && make clean
 	cd wolfram-language && make clean
 	cd lua && make clean
+	cd c && make clean
