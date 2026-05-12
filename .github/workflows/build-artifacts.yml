@@ -33,19 +33,23 @@ jobs:
       - name: Check Nix Flake
         run: nix flake check
 
-      - name: Build Anki deck with Nix
+      - name: Build Anki deck and PDF with Nix
         run: |
           nix develop --command bash -c \
-            'cd ${{ matrix.language }} && make cards.apkg'
+            'cd ${{ matrix.language }} && make build'
 
-      - name: Rename artifact
-        run: cp ${{ matrix.language }}/cards.apkg cards-${{ matrix.language }}.apkg
+      - name: Rename artifacts
+        run: |
+          cp ${{ matrix.language }}/cards.apkg cards-${{ matrix.language }}.apkg
+          cp ${{ matrix.language }}/cards.pdf  cards-${{ matrix.language }}.pdf
 
-      - name: Upload artifact to workflow run
+      - name: Upload artifacts to workflow run
         uses: actions/upload-artifact@v4
         with:
           name: cards-${{ matrix.language }}
-          path: cards-${{ matrix.language }}.apkg
+          path: |
+            cards-${{ matrix.language }}.apkg
+            cards-${{ matrix.language }}.pdf
           if-no-files-found: error
 
       - name: Release
@@ -54,3 +58,4 @@ jobs:
         with:
           files: |
             cards-${{ matrix.language }}.apkg
+            cards-${{ matrix.language }}.pdf

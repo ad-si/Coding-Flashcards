@@ -20,7 +20,7 @@ cards.pdf: cards.md
 
 
 .PHONY: build
-build: cards.apkg
+build: cards.apkg cards.pdf
 
 
 .PHONY: test

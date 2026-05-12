@@ -46,6 +46,7 @@
           buildInputs = [
             ankiPanky
             nerd-fonts.hasklug
+            pandoc
             tectonic
           ];
 
