@@ -33,6 +33,19 @@ jobs:
       - name: Check Nix Flake
         run: nix flake check
 
+      - name: Make Hasklug font visible to tectonic
+        run: |
+          # nix develop realizes all dev-shell inputs into /nix/store
+          nix develop --command true
+          mkdir -p ~/Library/Fonts
+          for dir in /nix/store/*-nerd-fonts-hasklug-*/share/fonts; do
+            [ -d "$dir" ] || continue
+            find "$dir" -type f \( -name "*.otf" -o -name "*.ttf" \) \
+              -exec cp -n {} ~/Library/Fonts/ \;
+          done
+          echo "Installed fonts:"
+          ls ~/Library/Fonts/ | grep -i hasklug | head
+
       - name: Build Anki deck and PDF with Nix
         run: |
           nix develop --command bash -c \
