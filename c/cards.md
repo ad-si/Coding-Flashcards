@@ -4,11 +4,17 @@ name: C Flashcards
 
 ---
 
-Give a local variable a local lifetime.
+Infer a variable's type from its initializer (C23).
+Previously a no-op storage-class specifier for automatic lifetime.
 
 . . .
 
 `auto`
+
+```c
+auto x = 5;       // C23: x is int
+auto y = 3.14;    // C23: y is double
+```
 
 ---
 
@@ -148,7 +154,9 @@ A long integer data type.
 
 ---
 
-Declare a variable to be stored in a CPU register.
+Hint that a variable should be stored in a CPU register.
+Vestigial: modern compilers ignore this and decide register allocation
+themselves. Its only remaining effect is forbidding `&` on the variable.
 
 . . .
 
@@ -268,18 +276,23 @@ How does it look?
 The `main` function.
 
 ```c
-int main() {
+int main(void) {
   // some code
 }
 ```
 
-Or, more correctly (recent standard):
+Or, when accepting command-line arguments:
 
 ```c
 int main(int argc, char *argv[]) {
   // some code
 }
 ```
+
+Note: write `(void)` rather than `()` for the no-argument form.
+In C17 and earlier, `()` means "unspecified parameters", not "no
+parameters". C23 finally makes them equivalent, but `(void)` is portable
+across all standards.
 
 ---
 
@@ -295,6 +308,112 @@ float b;
 double number;
 char letter;
 ```
+
+For integers where the exact width matters, prefer the fixed-width
+types from `<stdint.h>` (covered in a later card).
+
+---
+
+When should I use `<stdint.h>` types like `int32_t` instead of `int` / `long`?
+
+. . .
+
+The plain types (`int`, `long`, `long long`) have implementation-defined
+widths. On most 64-bit Unix systems `long` is 64 bits; on 64-bit Windows
+it's 32 bits. Use the fixed-width types when that difference matters:
+
+- Binary protocols, file formats, wire formats
+- Hardware registers, memory-mapped I/O
+- Hashing, checksums, anywhere overflow semantics depend on exact width
+- Cross-platform code that must behave identically everywhere
+
+```c
+#include <stdint.h>
+
+int32_t  signed_32bit;
+uint64_t unsigned_64bit;
+
+// "at least N bits" — smallest type with ≥ N bits
+int_least16_t at_least_16;
+
+// "fastest type with ≥ N bits" — often wider than asked, picked for speed
+int_fast32_t fast_counter;
+```
+
+Don't reach for them for ordinary loop counters or arithmetic — plain
+`int` is idiomatic and matches stdlib APIs. Overusing `uint32_t` is
+noise; using it for an array index on a 64-bit system is worse than
+`size_t` because it forces a truncation.
+
+---
+
+What type should I use for sizes, array indices, and the result of `sizeof`?
+
+. . .
+
+`size_t` (from `<stddef.h>`, also pulled in by `<stdio.h>`, `<stdlib.h>`,
+`<string.h>`). It's an unsigned type wide enough to represent the size
+of any object the platform supports — 32 bits on 32-bit systems, 64 bits
+on 64-bit systems.
+
+```c
+#include <stddef.h>
+#include <string.h>
+
+size_t len = strlen("hello");   // strlen returns size_t
+size_t n = sizeof(int);         // sizeof yields size_t
+
+int arr[100];
+for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++) {
+  arr[i] = 0;
+}
+```
+
+Related:
+
+- `ptrdiff_t` — signed type for the difference between two pointers
+- `ssize_t` — POSIX signed counterpart to `size_t` (e.g. `read`, `write`
+  return values)
+
+Don't substitute `int`, `unsigned`, or `uint64_t` here — APIs like
+`strlen`, `memcpy`, `fread` already use `size_t`, and mismatches cause
+warnings or silent truncation.
+
+---
+
+How do I `printf` / `scanf` a fixed-width integer type portably?
+
+. . .
+
+You can't hardcode `%d` or `%lld` — the right specifier depends on
+what `int64_t` actually maps to on the target platform.
+
+`<inttypes.h>` provides format-string macros: `PRI` for printf, `SCN`
+for scanf, followed by the conversion letter (`d`, `i`, `u`, `x`, `o`)
+and the width.
+
+```c
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdio.h>
+
+int64_t  big   = 1234567890123;
+uint32_t small = 42;
+
+printf("big = %" PRId64 ", small = %" PRIu32 "\n", big, small);
+
+uint64_t parsed;
+scanf("%" SCNu64, &parsed);
+```
+
+The macros are string literals, so adjacent-string-literal concatenation
+glues them into the format string at compile time. Common ones:
+
+- `PRId32`, `PRIu32`, `PRIx64`, `PRIo16`
+- `SCNd32`, `SCNu64`
+
+Including `<inttypes.h>` also includes `<stdint.h>`, so you don't need
+both.
 
 ---
 
@@ -319,8 +438,12 @@ Which function prints to the output screen (stdout)?
 `printf`
 
 ```c
-printf("Hello World");
+printf("Hello World\n");
 ```
+
+Include the trailing `\n` — without it, output may not be flushed
+before the program exits (stdout is line-buffered when attached to a
+terminal).
 
 ---
 
@@ -360,14 +483,25 @@ How do I assign a new value to a char array/buffer?
 
 . . .
 
-Use `strcpy(char *dest, char *src)`.
-Make sure `dest` has enough space to contain the source string.
+Prefer a bounded copy. `strcpy` doesn't check that `dest` has enough
+space and is a frequent source of buffer overflows — static analyzers
+and security guidelines (CERT, MISRA) flag unchecked uses.
+
+Safer options:
 
 ```c
-char bufArray[251];
-char *oriText = "the quick fox";
-strcpy(bufArray, oriText);
+char bufArray[256];
+const char *oriText = "the quick fox";
+
+// snprintf is portable and always null-terminates:
+snprintf(bufArray, sizeof(bufArray), "%s", oriText);
+
+// strlcpy (BSD, glibc 2.38+) also truncates safely:
+strlcpy(bufArray, oriText, sizeof(bufArray));
 ```
+
+Avoid `strncpy` for this — it doesn't guarantee null-termination
+and pads with zeros up to the size limit.
 
 ---
 
@@ -418,6 +552,9 @@ Common operators:
 Examples:
 
 ```c
+#include <stdbool.h>  // needed for true/false/bool pre-C23
+                      // (C23 makes them keywords)
+
 if (true || false) { … }
 if (a == b) { … }
 if (a != b) { … }
@@ -444,7 +581,7 @@ struct Person {
 };
 
 struct Person myself; // uses Person as datatype
-strcpy(myself.Name, "John");
+snprintf(myself.Name, sizeof(myself.Name), "%s", "John");
 myself.Age = 31;
 ```
 
@@ -470,7 +607,7 @@ typedef struct Person FBProfile;
 MyInteger a = 5;
 
 FBProfile guy;
-strcpy(guy.Name, "Jack");
+snprintf(guy.Name, sizeof(guy.Name), "%s", "Jack");
 guy.Age = 15;
 ```
 
@@ -482,19 +619,25 @@ How do I read a file?
 
 Include `stdio.h` and call `fopen` with the filename and read (`"r"`) mode
 as parameters.
-`fopen` returns a pointer to a `FILE` datatype.
-Use this pointer to read or write.
+`fopen` returns a pointer to a `FILE` datatype, or `NULL` on failure.
 
-Use `fgets` to read a line.
-Use `feof` to check if the end of the file has been reached.
+Loop on the return value of `fgets` — don't loop on `!feof(...)`.
+`feof` only becomes true *after* a failed read, so `while (!feof(fp))`
+runs the body one extra time with stale data. Checking `fgets` directly
+handles both EOF and read errors.
 
 ```c
-FILE *filepointer = fopen("C:\\input.txt", "r");
-char tmpBuffer[251];
+FILE *filepointer = fopen("/tmp/input.txt", "r");
+if (filepointer == NULL) {
+  perror("fopen");
+  return 1;
+}
 
-while (!feof(filepointer)) { // loop while not end-of-file
-  // read 250 chars into tmpBuffer, or until a newline or end-of-file
-  fgets(tmpBuffer, 250, filepointer);
+char tmpBuffer[256];
+
+// fgets returns NULL on EOF or error
+while (fgets(tmpBuffer, sizeof(tmpBuffer), filepointer) != NULL) {
+  // process tmpBuffer
 }
 
 fclose(filepointer); // close the file nicely for other applications
