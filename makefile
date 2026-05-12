@@ -48,6 +48,7 @@ build-combined: cards-combined.apkg cards-combined.pdf
 
 .PHONY: test
 test:
+	nix flake check
 	cd rust && make test
 	cd godot && make test
 	cd sqlite && make test
