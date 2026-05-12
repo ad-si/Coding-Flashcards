@@ -85,19 +85,35 @@ jobs:
           nix_path: nixpkgs=channel:nixos-23.11
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build combined Anki deck with Nix
+      - name: Make Hasklug font visible to tectonic
+        run: |
+          nix develop --command true
+          mkdir -p ~/Library/Fonts
+          for dir in /nix/store/*-nerd-fonts-hasklug-*/share/fonts; do
+            [ -d "$dir" ] || continue
+            find "$dir" -type f \( -name "*.otf" -o -name "*.ttf" \) \
+              -exec cp -n {} ~/Library/Fonts/ \;
+          done
+          echo "Installed fonts:"
+          ls ~/Library/Fonts/ | grep -i hasklug | head
+
+      - name: Build combined Anki deck and PDF with Nix
         run: |
           nix develop --command bash -c 'make build-combined'
 
-      - name: Upload combined deck to workflow run
+      - name: Upload combined artifacts to workflow run
         uses: actions/upload-artifact@v7
         with:
           name: cards-combined
-          path: cards-combined.apkg
+          path: |
+            cards-combined.apkg
+            cards-combined.pdf
           if-no-files-found: error
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: cards-combined.apkg
+          files: |
+            cards-combined.apkg
+            cards-combined.pdf

@@ -26,8 +26,20 @@ cards-combined.apkg: cards-combined.md
 	anki-panky $<
 
 
+cards-combined.pdf: cards-combined.md
+	pandoc \
+		--pdf-engine tectonic \
+		--variable "geometry:papersize={130mm,130mm}" \
+		--variable "fontsize: 10pt" \
+		--variable "monofont:Hasklug Nerd Font Mono" \
+		--variable "monofontoptions:Scale=0.7, FontFace={weight=700}" \
+		--to beamer \
+		--output $@ \
+		$<
+
+
 .PHONY: build-combined
-build-combined: cards-combined.apkg
+build-combined: cards-combined.apkg cards-combined.pdf
 
 
 .PHONY: test
@@ -40,7 +52,7 @@ test:
 
 .PHONY: clean
 clean:
-	rm -f cards-combined.md cards-combined.apkg
+	rm -f cards-combined.md cards-combined.apkg cards-combined.pdf
 	cd rust && make clean
 	cd godot && make clean
 	cd sqlite && make clean
