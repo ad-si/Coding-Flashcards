@@ -53,8 +53,9 @@ jobs:
 
       - name: Rename artifacts
         run: |
-          cp ${{ matrix.language }}/cards.apkg cards-${{ matrix.language }}.apkg
-          cp ${{ matrix.language }}/cards.pdf  cards-${{ matrix.language }}.pdf
+          cp ${{ matrix.language }}/cards.apkg           cards-${{ matrix.language }}.apkg
+          cp ${{ matrix.language }}/cards-with-name.apkg cards-${{ matrix.language }}-with-name.apkg
+          cp ${{ matrix.language }}/cards.pdf            cards-${{ matrix.language }}.pdf
 
       - name: Upload artifacts to workflow run
         uses: actions/upload-artifact@v7
@@ -62,6 +63,7 @@ jobs:
           name: cards-${{ matrix.language }}
           path: |
             cards-${{ matrix.language }}.apkg
+            cards-${{ matrix.language }}-with-name.apkg
             cards-${{ matrix.language }}.pdf
           if-no-files-found: error
 
@@ -71,6 +73,7 @@ jobs:
         with:
           files: |
             cards-${{ matrix.language }}.apkg
+            cards-${{ matrix.language }}-with-name.apkg
             cards-${{ matrix.language }}.pdf
 
   combined:
